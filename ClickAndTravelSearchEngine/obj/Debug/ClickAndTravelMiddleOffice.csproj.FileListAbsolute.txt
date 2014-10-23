@@ -1,0 +1,15 @@
+C:\Documents and Settings\Alex\My Documents\Visual Studio 2010\Projects\CATMO\ClickAndTravelSearchEngine\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\Alex\My Documents\Visual Studio 2010\Projects\CATMO\ClickAndTravelSearchEngine\bin\ClickAndTravelMiddleOffice.dll
+C:\Documents and Settings\Alex\My Documents\Visual Studio 2010\Projects\CATMO\ClickAndTravelSearchEngine\bin\ClickAndTravelMiddleOffice.pdb
+C:\Documents and Settings\Alex\My Documents\Visual Studio 2010\Projects\CATMO\ClickAndTravelSearchEngine\obj\Debug\ClickAndTravelMiddleOffice.dll
+C:\Documents and Settings\Alex\My Documents\Visual Studio 2010\Projects\CATMO\ClickAndTravelSearchEngine\obj\Debug\ClickAndTravelMiddleOffice.pdb
+C:\Documents and Settings\Alex\My Documents\Visual Studio 2010\Projects\CATMO\ClickAndTravelSearchEngine\bin\Megatec.MasterTour.BusinessRules.dll
+C:\Documents and Settings\Alex\My Documents\Visual Studio 2010\Projects\CATMO\ClickAndTravelSearchEngine\bin\Megatec.MasterTour.DataAccess.dll
+C:\Documents and Settings\Alex\My Documents\Visual Studio 2010\Projects\CATMO\ClickAndTravelSearchEngine\bin\Sider.dll
+C:\Users\svs\Documents\Visual Studio 2013\Projects\CATMO\ClickAndTravelSearchEngine\bin\ClickAndTravelMiddleOffice.dll.config
+C:\Users\svs\Documents\Visual Studio 2013\Projects\CATMO\ClickAndTravelSearchEngine\bin\ClickAndTravelMiddleOffice.dll
+C:\Users\svs\Documents\Visual Studio 2013\Projects\CATMO\ClickAndTravelSearchEngine\bin\ClickAndTravelMiddleOffice.pdb
+C:\Users\svs\Documents\Visual Studio 2013\Projects\CATMO\ClickAndTravelSearchEngine\bin\Sider.dll
+C:\Users\svs\Documents\Visual Studio 2013\Projects\CATMO\ClickAndTravelSearchEngine\obj\Debug\ClickAndTravelMiddleOffice.csprojResolveAssemblyReference.cache
+C:\Users\svs\Documents\Visual Studio 2013\Projects\CATMO\ClickAndTravelSearchEngine\obj\Debug\ClickAndTravelMiddleOffice.dll
+C:\Users\svs\Documents\Visual Studio 2013\Projects\CATMO\ClickAndTravelSearchEngine\obj\Debug\ClickAndTravelMiddleOffice.pdb

@@ -1,0 +1,5 @@
+E:\up\Backup\ClickAndTravelSearchEngine\bin\ClickAndTravelSearchEngine.dll
+E:\up\Backup\ClickAndTravelSearchEngine\bin\ClickAndTravelSearchEngine.pdb
+E:\up\Backup\ClickAndTravelSearchEngine\obj\Debug\ResolveAssemblyReference.cache
+E:\up\Backup\ClickAndTravelSearchEngine\obj\Debug\ClickAndTravelSearchEngine.dll
+E:\up\Backup\ClickAndTravelSearchEngine\obj\Debug\ClickAndTravelSearchEngine.pdb
