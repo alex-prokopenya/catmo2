@@ -17,12 +17,12 @@ namespace ClickAndTravelMiddleOffice.Containers.Excursions
         //    set { _details = value; }
         //}
 
-        private int _excursionDetails;
+        private int _id;
         [JsonMemberName("id")]
-        public int ExcursionDetails
+        public int Id
         {
-            get { return _excursionDetails; }
-            set { _excursionDetails = value; }
+            get { return _id; }
+            set { _id = value; }
         }
 
         private KeyValuePair<string, decimal>[] _prices;
@@ -39,7 +39,16 @@ namespace ClickAndTravelMiddleOffice.Containers.Excursions
 
                 return pr;
             }
-            set { }
+            set
+            {
+                List<KeyValuePair<string, decimal>> prices = new List<KeyValuePair<string, decimal>>();
+
+                JsonObject vl = value;
+                foreach (string name in vl.Names)
+                    prices.Add(new KeyValuePair<string, decimal>(name, Convert.ToDecimal(vl[name])));
+
+                _prices = prices.ToArray();
+            }
         }
 
         [JsonIgnore]
@@ -49,26 +58,36 @@ namespace ClickAndTravelMiddleOffice.Containers.Excursions
             set { _prices = value; }
         }
 
-        private DateTime[] _dates;
-        [JsonIgnore]
+        //private DateTime[] _dates;
+        //[JsonIgnore]
 
-        public DateTime[] Dates
-        {
-            get { return _dates; }
-            set { _dates = value; }
-        }
+        //public DateTime[] Dates
+        //{
+        //    get { return _dates; }
+        //    set { _dates = value; }
+        //}
 
-        [JsonMemberName("dates")]
-        public JsonArray jDates
-        {
-            get { JsonArray jAr = new JsonArray();
+        //[JsonMemberName("dates")]
+        //public JsonArray jDates
+        //{
+        //    get
+        //    {
+        //        JsonArray jAr = new JsonArray();
 
-            for (int i = 0; i < _dates.Length; i++)
-                jAr.Add( _dates[i].ToString("yyyy-MM-dd"));
+        //        for (int i = 0; i < _dates.Length; i++)
+        //            jAr.Add(_dates[i].ToString("yyyy-MM-dd"));
 
-            return jAr;
-            }
-            set {  }
-        }
+        //        return jAr;
+        //    }
+        //    set
+        //    {
+        //        List<DateTime> dates = new List<DateTime>();
+
+        //        foreach (string date in value)
+        //            dates.Add(Convert.ToDateTime(date));
+
+        //        _dates = dates.ToArray();
+        //    }
+        //}
     }
 }

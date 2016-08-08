@@ -25,6 +25,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,11 +51,42 @@
     <Reference Include="Jayrock.Json">
       <HintPath>bin\Jayrock.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Megatec.MasterTour.BusinessRules">
-      <HintPath>..\..\..\..\..\Desktop\Megatec.MasterTour.BusinessRules.dll</HintPath>
+    <Reference Include="Megatec.Common">
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Megatec.MasterTour.DataAccess">
-      <HintPath>..\..\..\..\..\Desktop\Megatec.MasterTour.DataAccess.dll</HintPath>
+    <Reference Include="Megatec.Common.BusinessRules">
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.Common.BusinessRules.dll</HintPath>
+    </Reference>
+    <Reference Include="Megatec.Common.Model">
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.Common.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="Megatec.Cryptography, Version=1.3.0.70, Culture=neutral, PublicKeyToken=e8a85c0485bf578b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.Cryptography.dll</HintPath>
+    </Reference>
+    <Reference Include="Megatec.Localizer">
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.Localizer.dll</HintPath>
+    </Reference>
+    <Reference Include="Megatec.MasterTour.BusinessRules, Version=1.1.511.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.MasterTour.BusinessRules.dll</HintPath>
+    </Reference>
+    <Reference Include="Megatec.MasterTour.DataAccess, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.MasterTour.DataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="Megatec.MasterTour.Model">
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.MasterTour.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="Megatec.MasterTour.Types">
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.MasterTour.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="Megatec.MasterTour.Web">
+      <HintPath>..\..\..\..\..\..\..\Temp\masterweb_vizit\bin\Megatec.MasterTour.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data, Version=6.9.8.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.6.9.8\lib\net40\MySql.Data.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Sider">
       <HintPath>..\..\CATSE\ClickAndTravelSearchEngine\bin\Sider.dll</HintPath>
@@ -76,10 +108,16 @@
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="YamlDotNet, Version=3.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\YamlDotNet.3.8.0\lib\net35\YamlDotNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="MiddleOffice.asmx" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -88,9 +126,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Code\MiddleOffice.asmx.cs">
+    <Content Include="App_Code\MiddleOffice.asmx.cs">
       <SubType>Component</SubType>
-    </Compile>
+    </Content>
     <Compile Include="Containers\CarRent\CarRentBookExtra.cs" />
     <Compile Include="Containers\CarRent\CarRentExtra.cs" />
     <Compile Include="Containers\CarRent\CarRentLocation.cs" />
@@ -99,6 +137,7 @@
     <Compile Include="Containers\CarRent\CarRentStation.cs" />
     <Compile Include="Containers\CarRent\CarRentStationDetails.cs" />
     <Compile Include="Containers\CarRent\CarRentVariant.cs" />
+    <Compile Include="Containers\Excursions\ExcursionBooking.cs" />
     <Compile Include="Containers\Excursions\ExcursionDetails.cs" />
     <Compile Include="Containers\Excursions\ExcursionType.cs" />
     <Compile Include="Containers\Excursions\ExcursionVariant.cs" />
@@ -113,22 +152,27 @@
     <Compile Include="Containers\Hotels\RoomVariant.cs" />
     <Compile Include="Containers\Inurance\InsuranceVariant.cs" />
     <Compile Include="Containers\Photo.cs" />
+    <Compile Include="Containers\TempService.cs" />
+    <Compile Include="Containers\TempTurist.cs" />
     <Compile Include="Containers\Tours\TourHotelRoom.cs" />
     <Compile Include="Containers\Tours\TourRoute.cs" />
     <Compile Include="Containers\Tours\TourDates.cs" />
     <Compile Include="Containers\Tours\TourVariant.cs" />
     <Compile Include="Containers\Tours\TourVariantsGroup.cs" />
+    <Compile Include="Containers\Transfers\TransferBooking.cs" />
     <Compile Include="Containers\Transfers\TransferDetails.cs" />
     <Compile Include="Containers\Transfers\TransferInfo.cs" />
     <Compile Include="Containers\Transfers\TransferPoint.cs" />
     <Compile Include="Containers\Transfers\TransferVariant.cs" />
     <Compile Include="Containers\Vehicle.cs" />
     <Compile Include="Containers\Visa\VisaDetails.cs" />
+    <Compile Include="DB\MySqlDataProvider.cs" />
     <Compile Include="ErrorCodes.cs" />
     <Compile Include="Exceptions\CatmoException.cs" />
     <Compile Include="Helpers\AirportsChecker.cs" />
     <Compile Include="Helpers\DB.cs" />
     <Compile Include="Helpers\Logger.cs" />
+    <Compile Include="Helpers\ServiceNameTranslator.cs" />
     <Compile Include="JsonRpcDispatcher.cs" />
     <Compile Include="MasterTour\MtHelper.cs" />
     <Compile Include="ParamsContainers\BookRoom.cs" />
@@ -190,7 +234,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="DB\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="json_handler.ashx" />
@@ -199,6 +242,7 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

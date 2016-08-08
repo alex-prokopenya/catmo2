@@ -1,35 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Services;
-using System.Configuration;
-
-using ClickAndTravelMiddleOffice.ParamsContainers;
-using ClickAndTravelMiddleOffice.Responses;
-using ClickAndTravelMiddleOffice.Containers.Transfers;
-using ClickAndTravelMiddleOffice.Containers.CarRent;
-using ClickAndTravelMiddleOffice.Containers.Visa;
-using ClickAndTravelMiddleOffice.Containers.Inurance;
-using ClickAndTravelMiddleOffice.Containers.Excursions;
-using ClickAndTravelMiddleOffice.Containers.Hotels;
+﻿using ClickAndTravelMiddleOffice.Exceptions;
 using ClickAndTravelMiddleOffice.Helpers;
 using ClickAndTravelMiddleOffice.MasterTour;
+using ClickAndTravelMiddleOffice.ParamsContainers;
+using ClickAndTravelMiddleOffice.Responses;
 
-using System.ServiceModel;
-using System.ServiceModel.Web;
-using System.Web.Script.Serialization;
-using System.Web.Script.Services;
-using System.Web.Services.Protocols;
-
-using Megatec.MasterTour.DataAccess;
+using Megatec.Common.BusinessRules.Base;
 using Megatec.MasterTour.BusinessRules;
+using Megatec.MasterTour.DataAccess;
+using Megatec.MasterTour.Web.Security;
+using Megatec.MasterWeb.Logic;
+using Megatec.Cryptography;
 
-
-using System.Data.SqlClient;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
-
-using ClickAndTravelMiddleOffice.Exceptions;
+using System.Data.SqlClient;
+using System.Linq;
+using System.ServiceModel;
+using System.Web.Services;
 
 namespace ClickAndTravelMiddleOffice
 {
@@ -50,7 +39,6 @@ namespace ClickAndTravelMiddleOffice
             : base()
         {
             Manager.ConnectionString = ConfigurationManager.AppSettings["MasterTourConnectionString"];
-            //  AppDomainManager.
         }
 
         #region PrivateFields rate_codes, rate_courses
@@ -60,10 +48,43 @@ namespace ClickAndTravelMiddleOffice
         private KeyValuePair<string, decimal>[] rate_courses;
 
         #endregion
+        public static object CheckAgentLogin(string login, string passwordhash) {
+
+            var salt = ConfigurationManager.AppSettings["AuthSalt"];
+            //проверить пароль
+            DupUsers dus = new DupUsers(new Megatec.Common.BusinessRules.Base.DataContainer());
+            dus.RowFilter = "US_ID = '" + InjectionProtector.ValidString(MtHelper.PrepareLogin(login)) + "' ";
+
+            dus.Fill();
+
+            if (dus.Count > 0)
+            {
+                Logger.WriteToLog(dus[0].Password);
+                var password = dus[0].Password;
+
+                try {
+                    password =  Megatec.MasterTour.Web.Security.Authentication.GetPassword(dus[0].Password, true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteToLog(ex.Message + ex.StackTrace);
+                }
+
+                var hash = MtHelper.CalculateMD5Hash(password + salt);
+
+                if (hash.ToUpper() == passwordhash.ToUpper())
+                    return new { result = "success", token = MtHelper.CalculateMD5Hash(login + salt + DateTime.Now.AddHours(-1).ToString("yyMMddHH")) };
+                else
+                    return new { result = "fail", error = "wrong password" };
+            }
+
+            return new { result = "fail", error = "login not found" };
+
+        }
 
         public static Dogovor GetDogovor(string code)
         {
-            Dogovors dogs = new Dogovors(new DataCache());
+            Dogovors dogs = new Dogovors(new DataContainer());
             dogs.RowFilter = "dg_code='" + code + "'";
             dogs.Fill();
 
@@ -73,20 +94,20 @@ namespace ClickAndTravelMiddleOffice
             Dogovor dog = dogs[0];
 
             if (dog.TurDate < System.Convert.ToDateTime("1900-01-01"))
-                throw new CatmoException("Путевка с номером " + code.Trim() + " аннулирована!",  ErrorCodes.AnotherException);
+                throw new CatmoException("Путевка с номером " + code.Trim() + " аннулирована!", ErrorCodes.AnotherException);
 
             if (dog.TurDate < DateTime.Today)
-                throw new CatmoException("По путевке " + code.Trim() + " уже наступила дата заезда!",  ErrorCodes.AnotherException);
+                throw new CatmoException("По путевке " + code.Trim() + " уже наступила дата заезда!", ErrorCodes.AnotherException);
 
             if ((dog.Price - dog.Payed) <= 0)
                 throw new CatmoException("Путевка с номером " + code.Trim() + " уже оплачена!", ErrorCodes.AnotherException);
 
             if ((dog.OrderStatusKey == 2) || (dog.OrderStatusKey == 4))
-                throw new CatmoException("Статус путевки " + dog.Code + " запрещает оплату",  ErrorCodes.AnotherException);
+                throw new CatmoException("Статус путевки " + dog.Code + " запрещает оплату", ErrorCodes.AnotherException);
 
             return dog;
         }
-        
+
         public static bool TryBonusPayment(string dogovorCode, long transactionId, int summ)
         {
             Dogovor dog = GetDogovor(dogovorCode);
@@ -97,13 +118,15 @@ namespace ClickAndTravelMiddleOffice
                 throw new CatmoException("Trans_id already used", ErrorCodes.AnotherException);
         }
 
+
         public static bool IsPidUsed(Dogovor dogovor, string pId)
         {
             SqlConnection myConnection = new SqlConnection(Manager.ConnectionString);
             myConnection.Open();
+
             try
             {
-                string findingNum =  "bs_" + pId + "" + dogovor.Key;
+                string findingNum = "bs_" + pId + "" + dogovor.Key;
                 SqlCommand com = new SqlCommand();
                 com.Connection = myConnection;
                 com.CommandText = "select count(*) from fin_documents where dc_outnum like '%" + findingNum + "%'";
@@ -139,7 +162,7 @@ namespace ClickAndTravelMiddleOffice
                 com.Parameters.Add(new SqlParameter("@p_sRate", "рб")); //код валюты ПС
                 com.Parameters.Add(new SqlParameter("@p_nTurSum", summ));//сумма в евро
                 com.Parameters.Add(new SqlParameter("@p_sTurRate", dogovor.RateCode));   //евро
-                com.Parameters.Add(new SqlParameter("@p_sReceipt", "bs_" + pId+""+dogovor.Key));
+                com.Parameters.Add(new SqlParameter("@p_sReceipt", "bs_" + pId + "" + dogovor.Key));
                 com.Parameters.Add(new SqlParameter("@p_sDogovor", dogovor.Code));
                 com.Parameters.Add(new SqlParameter("@p_sComment", "Проводка по оплате бонусами. " + pId));
                 com.Parameters.Add(new SqlParameter("@p_nError", error));
@@ -158,15 +181,14 @@ namespace ClickAndTravelMiddleOffice
             return true;
         }
 
+
         //применяет пачку курсов к цене
         private KeyValuePair<string, decimal>[] ApplyCourses(decimal price, KeyValuePair<string, decimal>[] courses)
         {
             KeyValuePair<string, decimal>[] res = new KeyValuePair<string, decimal>[courses.Length];
 
             for (int i = 0; i < courses.Length; i++)
-            {
                 res[i] = new KeyValuePair<string, decimal>(courses[i].Key, Math.Round(price / courses[i].Value));
-            }
 
             return res;
         }
@@ -174,13 +196,13 @@ namespace ClickAndTravelMiddleOffice
         [WebMethod]
         public NewDogovorResponse CreateNewDogovor(int[] bookIds, UserInfo info)
         {
-            Dogovor dog = MtHelper.SaveNewDogovor( bookIds, info);
+            Dogovor dog = MtHelper.SaveNewDogovor(bookIds, info);
             KeyValuePair<string, decimal>[] _courses = MtHelper.GetCourses(rate_codes, dog.Rate.ISOCode, DateTime.Today);
 
             return new NewDogovorResponse()
             {
                 DogovorCode = dog.Code,
-                PayDate = DateTime.Today.AddDays(1),
+                PayDate = dog.PaymentDate,
                 Prices = ApplyCourses(Convert.ToDecimal(dog.Price), _courses),
             };
         }
@@ -188,7 +210,6 @@ namespace ClickAndTravelMiddleOffice
         [WebMethod]  //annulate by user
         public int AnnulateDogovor(string dogovorCode, int[] services)
         {
-            //!!!!!
             dogovorCode = MtHelper.GetDogovor(dogovorCode).Code; //для тестов подставляем определенный номер
 
             try
@@ -215,7 +236,7 @@ namespace ClickAndTravelMiddleOffice
 
             DogovorHeader[] res = new DogovorHeader[dogs.Count];
 
-            DateTime minDate = new DateTime(2014,1,1);
+            DateTime minDate = new DateTime(2016, 3, 1);
 
             for (int i = 0; i < dogs.Count; i++)
             {
@@ -242,26 +263,37 @@ namespace ClickAndTravelMiddleOffice
 
         private ServiceSimpleInfo[] GetDogovorServices(Dogovor dog)
         {
+            var tempDict = new Dictionary<int, ServiceSimpleInfo>();
+
             dog.DogovorLists.Fill(); //загрузить услуги
-            ServiceSimpleInfo[] services_array = new ServiceSimpleInfo[dog.DogovorLists.Count];
-            int j = 0;
-            foreach (DogovorList dl in dog.DogovorLists)
+
+            for (int j = 0; j < dog.DogovorLists.Count; j++)//DogovorList dl in dog.DogovorLists)
             {
+                DogovorList dl = dog.DogovorLists[j];
+
                 int bookId = 0;
+                int tempKey = j;
                 try
                 {
                     bookId = Convert.ToInt32(dl.Comment);
+                    tempKey = bookId;
                 }
                 catch (Exception) { }
 
-                services_array[j++] = new ServiceSimpleInfo()
+                if (tempDict.ContainsKey(tempKey))
                 {
-                    BookId = bookId,
-                    Status = dl.ControlKey,
-                    Title = dl.Name
-                };
+                    tempDict[tempKey].Title += " + " + dl.Name;
+                }
+                else
+                    tempDict[tempKey] = new ServiceSimpleInfo()
+                    {
+                        BookId = bookId,
+                        Status = dl.ControlKey,
+                        Title = dl.Name
+                    };
             }
-            return services_array;
+
+            return tempDict.Values.ToArray();
         }
 
         [WebMethod] //dogovor info
@@ -273,29 +305,40 @@ namespace ClickAndTravelMiddleOffice
                 Dogovor dog = MtHelper.GetDogovor(dogovorCode);
 
                 dog.DogovorLists.Fill();
-              
+
                 //узнаем курсы валют
                 KeyValuePair<string, decimal>[] _courses = MtHelper.GetCourses(rate_codes, dog.Rate.ISOCode, dog.CreateDate);
 
                 //создаем массив по количеству услуг
-                ServiceInfo[] services = new ServiceInfo[dog.DogovorLists.Count];
+                var tempServicesDict = new Dictionary<int, ServiceInfo>();
+                var tempPrices = new Dictionary<int, double>();
 
                 int cnt = 0;
-                foreach (DogovorList dl in dog.DogovorLists) //заполняем массив услуг
+                for (int j = 0; j < dog.DogovorLists.Count; j++) //заполняем массив услуг
                 {
+                    DogovorList dl = dog.DogovorLists[j];
+
                     int bookId = 0;
+                    int tempKey = j;
                     try
                     {
-                        bookId = Convert.ToInt32( dl.Comment );
+                        bookId = Convert.ToInt32(dl.Comment);
+                        tempKey = bookId;
                     }
-                    catch(Exception){}
+                    catch (Exception) { }
 
-                    services[cnt++] = new ServiceInfo()
+                    if (tempPrices.ContainsKey(tempKey))
+                        tempPrices[tempKey] += dl.Brutto;
+                    else
+                        tempPrices[tempKey] = dl.Brutto;
+
+
+                    tempServicesDict[tempKey] = new ServiceInfo()
                     {
                         BookId = bookId,
                         Day = dl.Day,
                         Ndays = dl.NDays,
-                        Prices = ApplyCourses(Convert.ToDecimal(dl.Brutto), _courses),
+                        Prices = ApplyCourses(Convert.ToDecimal(tempPrices[tempKey]), _courses),
                         ServiceClass = dl.ServiceKey,
                         Status = dl.ControlKey,
                         Title = dl.Name
@@ -311,15 +354,16 @@ namespace ClickAndTravelMiddleOffice
                 foreach (Turist ts in dog.Turists) //заполняем массив услуг
                 {
                     int tsId = cnt;
+
                     try
                     {
-                        tsId  = Convert.ToInt32(ts.PostIndex);
+                        tsId = Convert.ToInt32(ts.PostIndex);
                     }
                     catch (Exception) { }
 
                     turists[cnt++] = new TuristContainer()
                     {
-                        Id = tsId, 
+                        Id = tsId,
                         Name = ts.NameLat,
                         FirstName = ts.FNameLat,
                         BirthDate = ts.Birthday,
@@ -342,20 +386,20 @@ namespace ClickAndTravelMiddleOffice
 
                     TourDate = dog.TurDate,
 
-                    PayDate = dog.CreateDate.AddMinutes(15),
+                    PayDate = dog.PaymentDate,
 
                     UpDate = dog.ConfirmedDate,
 
                     Messages = GetDogovorMessages(dog.Code, Convert.ToDateTime("2013-10-10")),
 
-                    Services = services,
+                    Services = tempServicesDict.Values.ToArray(),
 
                     Documents = MtHelper.GetDogovorDocuments(dog.Code)
                 };
             }
             catch (Exception ex)
             {
-                Logger.WriteToLog(ex.Message + " "+ ex.Source+" " + ex.StackTrace);
+                Logger.WriteToLog(ex.Message + " " + ex.Source + " " + ex.StackTrace);
                 throw ex;
 
             }
@@ -366,7 +410,7 @@ namespace ClickAndTravelMiddleOffice
         {
             Dogovor dog = MtHelper.GetDogovor(dogovorCode);
 
-            return MtHelper.GetDogovorMessages(dog.Code, minDate);
+            return MtHelper.GetDogovorMessages(dog.Key, minDate);
         }
 
         [WebMethod]

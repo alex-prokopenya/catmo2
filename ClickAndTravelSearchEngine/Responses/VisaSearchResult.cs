@@ -17,14 +17,6 @@ namespace ClickAndTravelMiddleOffice.Responses
             set { _searchId = value; }
         }
 
-        //private string _currencyCode;
-
-        //public string CurrencyCode
-        //{
-        //    get { return _currencyCode; }
-        //    set { _currencyCode = value; }
-        //}
-
         private VisaDetails _visaDetails;
 
         [JsonMemberName("visa_details")]

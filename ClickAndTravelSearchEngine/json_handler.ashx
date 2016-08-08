@@ -15,6 +15,7 @@ using ClickAndTravelMiddleOffice.ParamsContainers;
 using ClickAndTravelMiddleOffice.Helpers;
 using ClickAndTravelMiddleOffice.Exceptions;
 using ClickAndTravelMiddleOffice.Containers.CarRent;
+using ClickAndTravelMiddleOffice.DB;
 
 namespace ClickAndTravelMiddleOffice
 {
@@ -25,13 +26,19 @@ namespace ClickAndTravelMiddleOffice
     {
         private MiddleOffice middle_office = new MiddleOffice();
 
-
         public json_handler()
         {
 
             JsonRpcDispatcherFactory.Current = s => new ClickAndTravelMiddleOffice.JsonRpcDispatcher(s);
         }
-        
+
+        [JsonRpcMethod("get_service_title")]
+        [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"get_service_title\",\"params\":[\"test\",\"test\"], \"id\":0}")]
+        public object get_service_title(int book_id)
+        {
+            return MySqlDataProvider.GetServiceTitle(book_id, true);
+        }
+
         //++++
         //создаем новый заказ в мастер-туре по полученным айдишникам от поставщиков услуг
         [JsonRpcMethod("get_server_time")]
@@ -42,7 +49,16 @@ namespace ClickAndTravelMiddleOffice
             return new int[] { DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second};
         }
 
-      
+
+        //создаем новый заказ в мастер-туре по полученным айдишникам от поставщиков услуг
+        [JsonRpcMethod("check_agent_login")]
+        [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"check_agent_login\",\"params\":[\"test\",\"test\"], \"id\":0}")]
+        public object check_agent_login(string login, string passwordhash)
+        {
+            return MiddleOffice.CheckAgentLogin(login,passwordhash);
+        }
+
+
         [JsonRpcMethod("make_bonus_payment")]
         [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"make_bonus_payment\",\"params\":[\"TPA12332125\", 1010, 100],\"id\":0}")]
         public object make_bonus_payment(string dogovor_code, long trans_id, int summ)
@@ -59,10 +75,10 @@ namespace ClickAndTravelMiddleOffice
             else
                 return 0;
         }
-        
+
         //сохраняем новый заказ в МТ на основании сделаных в backoffice броней
         [JsonRpcMethod("create_new_dogovor")]
-	    [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"create_new_dogovor\",\"params\":[[1,2,3,4], {\"email\":\"user@test.com\",\"phone\":\"+375 29 111 22 33\"}],\"id\":0}")]
+        [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"create_new_dogovor\",\"params\":[[1,2,3,4], {\"agent_login\":\"meg\",\"email\":\"user@test.com\",\"phone\":\"+375 29 111 22 33\"}],\"id\":0}")]
         public  object create_new_dogovor(JsonArray book_ids, JsonObject user_info)
         {
             UserInfo userInfo = null;
@@ -82,7 +98,7 @@ namespace ClickAndTravelMiddleOffice
             //проверяем их количество
             if ((services_.Length == 0) || (services_.Length > 40))
                 throw new CatmoException("Invalid book_ids length", ErrorCodes.InvalidBookIdsLength);
-            
+
             //проверяем айдишники на валидность
             foreach (int key in services_)
                 if (key <= 0) throw new CatmoException("Invalid book_id '" + key + "'", ErrorCodes.InvalidBookId);
@@ -94,7 +110,7 @@ namespace ClickAndTravelMiddleOffice
         //++++++
         //аннулируем заказ, либо набор услуг из заказа
         [JsonRpcMethod("annulate_dogovor")]
-	    [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"annulate_dogovor\",\"params\":['TR4534',[]],\"id\":0}")]
+        [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"annulate_dogovor\",\"params\":['TR4534',[]],\"id\":0}")]
         public object annulate_dogovor(string dogovor_code, params object[] args)
         {
             //проверяем номер путевки на валидность
@@ -116,7 +132,7 @@ namespace ClickAndTravelMiddleOffice
 
         //получаем список путевок привязаных к пользователю по email или user id
         [JsonRpcMethod("get_dogovors_by_user")]
-	    [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"get_dogovors_by_user\",\"params\":[\"tt@rr.tt\", 1],\"id\":0}")]
+        [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"get_dogovors_by_user\",\"params\":[\"tt@rr.tt\", 1],\"id\":0}")]
         public object get_dogovors_by_user(string user_mail, int user_id)
         {
             if (!Validator.CheckUserMail(user_mail)) throw new CatmoException("Invalid user_mail ", ErrorCodes.InvalidUserMail);
@@ -125,9 +141,9 @@ namespace ClickAndTravelMiddleOffice
         }
 
         [JsonRpcMethod("get_dogovor_info")]
-	    [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"get_dogovor_info\",\"params\":[\"TR12423\"],\"id\":0}")]
+        [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"get_dogovor_info\",\"params\":[\"TR12423\"],\"id\":0}")]
         public object get_dogovor_info(string dogovor_code)
-	    {
+        {
             if (!Validator.CheckDogovorCode(dogovor_code)) throw new CatmoException("Invalid dogovor_code", ErrorCodes.InvalidDogovorCode);
 
             return middle_office.GetDogovorInfo(dogovor_code);
@@ -143,7 +159,7 @@ namespace ClickAndTravelMiddleOffice
 
             try
             {
-                minDate = DateTime.ParseExact(min_date_time, "yyyy-MM-dd HH:mm:ss", null); 
+                minDate = DateTime.ParseExact(min_date_time, "yyyy-MM-dd HH:mm:ss", null);
             }
             catch (Exception)
             {
@@ -152,11 +168,11 @@ namespace ClickAndTravelMiddleOffice
 
             return middle_office.GetDogovorMessages(dogovor_code, minDate);
         }
-        
-        
+
+
         //отправляем сообщение менеджеру от пользователя 
         [JsonRpcMethod("send_message")]
-	    [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"send_message\",\"params\":[\"TR34325\",\"testtt\"],\"id\":0}")]
+        [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"send_message\",\"params\":[\"TR34325\",\"testtt\"],\"id\":0}")]
         public object send_message(string dogovor_code, string text)
         {
             if (!Validator.CheckDogovorCode(dogovor_code)) throw new CatmoException("Invalid dogovor_code", ErrorCodes.InvalidDogovorCode);
@@ -169,7 +185,7 @@ namespace ClickAndTravelMiddleOffice
 
         //добавляем услугу к уже созданному заказу
         [JsonRpcMethod("add_service")]
-	    [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"add_service\",\"params\":['TR4534',1],\"id\":0}")]	
+        [JsonRpcHelp("{\"jsonrpc\":\"2.0\",\"method\":\"add_service\",\"params\":['TR4534',1],\"id\":0}")]
         public object add_service(string dogovor_code, int book_id)
         {
             Logger.WriteToLog("test");

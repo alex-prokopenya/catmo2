@@ -19,9 +19,6 @@ namespace ClickAndTravelMiddleOffice.ParamsContainers
         { 
             try
             {
-              //  JsonArray  turistBd = inp["birth_date"] as JsonArray;    //дата рождения
-              //  JsonArray  turistPd = inp["passport_date"] as JsonArray; //дата действия паспорта
-
                 JsonObject bonusCard = inp["bonus_card"] as JsonObject;
 
                 _birthDate = DateTime.ParseExact(inp["birth_date"].ToString(), "yyyy-MM-dd", null);
@@ -31,7 +28,6 @@ namespace ClickAndTravelMiddleOffice.ParamsContainers
                 _name = inp["last_name"].ToString();
                 _passportNum = inp["passport_num"].ToString();
                 _passportDate = DateTime.ParseExact(inp["passport_date"].ToString(), "yyyy-MM-dd", null);// new DateTime((int)turistPd[0], (int)turistPd[1], (int)turistPd[2]);
-                
             }
             catch(Exception ex)
             {

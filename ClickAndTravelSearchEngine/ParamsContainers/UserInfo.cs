@@ -6,6 +6,7 @@ using Jayrock.Json;
 using Jayrock.JsonRpc;
 using Jayrock.JsonRpc.Web;
 using Jayrock.Json.Conversion;
+using ClickAndTravelMiddleOffice.MasterTour;
 
 
 namespace ClickAndTravelMiddleOffice.ParamsContainers
@@ -21,7 +22,14 @@ namespace ClickAndTravelMiddleOffice.ParamsContainers
             {
                 this._email = inp["email"].ToString();
                 this._phone = inp["phone"].ToString();
+
+                if (inp.Contains("agent_login"))
+                    this._userLogin = MtHelper.PrepareLogin(inp["agent_login"].ToString());
+                else
+                    this._userLogin = "";
+
                 this._userId = Convert.ToInt32(inp["id"]);
+
             }
             catch (Exception ex)
             {
@@ -51,6 +59,14 @@ namespace ClickAndTravelMiddleOffice.ParamsContainers
         {
             get { return _userId; }
             set { _userId = value; }
+        }
+
+        private string _userLogin;
+
+        public string UserLogin
+        {
+            get { return _userLogin; }
+            set { _userLogin = value; }
         }
     }
 }
